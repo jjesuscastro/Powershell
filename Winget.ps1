@@ -83,3 +83,10 @@ while ($true) {
     }
     Start-Sleep -Seconds 1;
  }
+
+# Keep the window open until the user presses a key
+Write-Host 'Press any key to exit...'
+while ($true) {
+    Start-Sleep -Seconds 1
+    if ([console]::KeyAvailable) { break }
+}
