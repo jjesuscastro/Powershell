@@ -62,32 +62,22 @@ function Configure-TreeViewEvents {
     })
 }
 
-# Function to create the progress bar
-function Create-ProgressBar {
-    $progressBar = New-Object System.Windows.Forms.ProgressBar
-    $progressBar.Size = New-Object System.Drawing.Size(350, 20)
-    $progressBar.Location = New-Object System.Drawing.Point(20, 330)
-    $progressBar.Minimum = 0
-    $progressBar.Maximum = 100
-    return $progressBar
-}
-
 # Function to create the installation status label
 function Create-StatusLabel {
     $statusLabel = New-Object System.Windows.Forms.Label
     $statusLabel.Size = New-Object System.Drawing.Size(350, 20)
-    $statusLabel.Location = New-Object System.Drawing.Point(20, 355)
+    $statusLabel.Location = New-Object System.Drawing.Point(20, 330)
     $statusLabel.Text = "Waiting for installation..."
     return $statusLabel
 }
 
 # Function to create the install button
 function Create-InstallButton {
-    param($treeView, $progressBar, $statusLabel)
+    param($treeView, $statusLabel)
     $installButton = New-Object System.Windows.Forms.Button
     $installButton.Text = "Install Selected"
     $installButton.Size = New-Object System.Drawing.Size(350, 30)
-    $installButton.Location = New-Object System.Drawing.Point(20, 380)
+    $installButton.Location = New-Object System.Drawing.Point(20, 360)
     
     $installButton.Add_Click({
         $selectedApps = @()
@@ -102,17 +92,15 @@ function Create-InstallButton {
         if ($selectedApps.Count -eq 0) {
             [System.Windows.Forms.MessageBox]::Show("No applications selected.", "Warning", "OK", "Warning")
         } else {
+            $total = $selectedApps.Count
             foreach ($app in $selectedApps) {
-                $statusLabel.Text = "Installing: $app"
-                $progressBar.Value = 0
-                Start-Process "winget" -ArgumentList "install --id=$app --silent --accept-package-agreements --accept-source-agreements" -NoNewWindow -Wait
-                
-                # Simulate progress update per application
-                for ($i = 0; $i -le 100; $i+=10) {
-                    Start-Sleep -Milliseconds 200
-                    $progressBar.Value = $i
+                $index = [array]::IndexOf($selectedApps, $app) + 1
+                for ($i = 0; $i -lt 10; $i++) {  # Animation loop (adjust iterations as needed)
+                    $dots = "." * (($i % 3) + 1)  # Cycles between ., .., ...
+                    $statusLabel.Text = "Installing ($index of $total): $app$dots"
+                    Start-Sleep -Milliseconds 500
                 }
-                $progressBar.Value = 100
+                Start-Process "winget" -ArgumentList "install --id=$app --accept-package-agreements --accept-source-agreements" -NoNewWindow -Wait
             }
             $statusLabel.Text = "Installation complete."
         }
@@ -121,27 +109,45 @@ function Create-InstallButton {
 }
 
 # Function to create additional buttons
-function Create-AdditionalButton {
-    param($text, $command, $xPos)
+function Create-TitusButton {
+    param($text, $xPos)
+    
     $button = New-Object System.Windows.Forms.Button
     $button.Text = $text
     $button.Size = New-Object System.Drawing.Size(170, 30)
-    $button.Location = New-Object System.Drawing.Point($xPos, 420)
-    
-    $button.Add_Click({
-        Start-Process PowerShell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -Command $command" -NoNewWindow
+    $button.Location = New-Object System.Drawing.Point($xPos, 400)
+
+    # Properly define the click event to use the captured variable
+    $button.Add_Click([System.EventHandler]{
+        Start-Process PowerShell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -Command `"iwr -useb https://christitus.com/win | iex`"" -NoNewWindow
     })
+
+    return $button
+}
+
+function Create-ActivateButton {
+    param($text, $xPos)
+    
+    $button = New-Object System.Windows.Forms.Button
+    $button.Text = $text
+    $button.Size = New-Object System.Drawing.Size(170, 30)
+    $button.Location = New-Object System.Drawing.Point($xPos, 400)
+
+    # Properly define the click event to use the captured variable
+    $button.Add_Click([System.EventHandler]{
+        Start-Process PowerShell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -Command `"irm https://get.activated.win | iex`"" -NoNewWindow
+    })
+
     return $button
 }
 
 # Initialize form and UI elements
 $form = Create-MainForm
 $treeView = Create-TreeView
-$progressBar = Create-ProgressBar
 $statusLabel = Create-StatusLabel
-$installButton = Create-InstallButton -treeView $treeView -progressBar $progressBar -statusLabel $statusLabel
-$button1 = Create-AdditionalButton -text "Chris Titus Script" -command "iwr -useb https://christitus.com/win | iex" -xPos 20
-$button2 = Create-AdditionalButton -text "Activate Windows" -command "irm https://get.activated.win | iex" -xPos 200
+$installButton = Create-InstallButton -treeView $treeView -statusLabel $statusLabel
+$button1 = Create-TitusButton -text "Chris Titus Script" -xPos 20
+$button2 = Create-ActivateButton -text "Activate Windows" -xPos 200
 
 # Application categories and IDs
 $appsByCategory = @{ 
@@ -190,7 +196,6 @@ Configure-TreeViewEvents -treeView $treeView
 
 # Add elements to the form
 $form.Controls.Add($treeView)
-$form.Controls.Add($progressBar)
 $form.Controls.Add($statusLabel)
 $form.Controls.Add($installButton)
 $form.Controls.Add($button1)
