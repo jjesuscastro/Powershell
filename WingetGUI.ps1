@@ -61,7 +61,7 @@ foreach ($category in $appsByCategory.Keys) {
     $treeView.Nodes.Add($categoryNode)
 }
 
-# Event to check/uncheck child nodes when parent is checked/unchecked
+# Event to check/uncheck child nodes and parent
 $treeView.add_AfterCheck({
     param($sender, $e)
     if ($e.Action -ne 'ByMouse') { return }  # Prevent infinite loops
@@ -69,8 +69,23 @@ $treeView.add_AfterCheck({
     $node = $e.Node
     $isChecked = $node.Checked
     
+    # Check/uncheck child nodes
     foreach ($childNode in $node.Nodes) {
         $childNode.Checked = $isChecked
+    }
+    
+    # Check/uncheck parent node if all/none children are checked
+    if ($node.Parent -ne $null) {
+        $allChecked = $true
+        $noneChecked = $true
+        foreach ($sibling in $node.Parent.Nodes) {
+            if ($sibling.Checked) {
+                $noneChecked = $false
+            } else {
+                $allChecked = $false
+            }
+        }
+        $node.Parent.Checked = $allChecked
     }
 })
 
@@ -81,15 +96,22 @@ $progressBar = New-Object System.Windows.Forms.ProgressBar
 $progressBar.Size = New-Object System.Drawing.Size(350, 20)
 $progressBar.Location = New-Object System.Drawing.Point(20, 330)
 $progressBar.Minimum = 0
-$progressBar.Maximum = ($appsByCategory.Values | ForEach-Object { $_.Count } | Measure-Object -Sum).Sum
+$progressBar.Maximum = 100
 $progressBar.Value = 0
 $form.Controls.Add($progressBar)
+
+# Create Label for installation status
+$statusLabel = New-Object System.Windows.Forms.Label
+$statusLabel.Size = New-Object System.Drawing.Size(350, 20)
+$statusLabel.Location = New-Object System.Drawing.Point(20, 355)
+$statusLabel.Text = "Waiting for installation..."
+$form.Controls.Add($statusLabel)
 
 # Create Install Button
 $installButton = New-Object System.Windows.Forms.Button
 $installButton.Text = "Install Selected"
 $installButton.Size = New-Object System.Drawing.Size(350, 30)
-$installButton.Location = New-Object System.Drawing.Point(20, 370)
+$installButton.Location = New-Object System.Drawing.Point(20, 380)
 $form.Controls.Add($installButton)
 
 # Install Button Click Event
@@ -106,33 +128,19 @@ $installButton.Add_Click({
     if ($selectedApps.Count -eq 0) {
         [System.Windows.Forms.MessageBox]::Show("No applications selected.", "Warning", "OK", "Warning")
     } else {
-        $progressBar.Value = 0
         foreach ($app in $selectedApps) {
+            $statusLabel.Text = "Installing: $app"
+            $progressBar.Value = 0
             Start-Process "winget" -ArgumentList "install --id=$app --silent --accept-package-agreements --accept-source-agreements" -NoNewWindow -Wait
-            $progressBar.Value += 1
+            for ($i = 0; $i -le 100; $i+=10) {
+                Start-Sleep -Milliseconds 200
+                $progressBar.Value = $i
+            }
+            $progressBar.Value = 100
         }
+        $statusLabel.Text = "Installation complete."
     }
 })
-
-# Create Optimization Script Button
-$optimizeButton = New-Object System.Windows.Forms.Button
-$optimizeButton.Text = "Run Optimization"
-$optimizeButton.Size = New-Object System.Drawing.Size(170, 30)
-$optimizeButton.Location = New-Object System.Drawing.Point(20, 410)
-$optimizeButton.Add_Click({
-    Start-Process PowerShell -ArgumentList "-Command iwr -useb https://christitus.com/win | iex" -NoNewWindow -Wait
-})
-$form.Controls.Add($optimizeButton)
-
-# Create Activation Script Button
-$activateButton = New-Object System.Windows.Forms.Button
-$activateButton.Text = "Run Activation"
-$activateButton.Size = New-Object System.Drawing.Size(170, 30)
-$activateButton.Location = New-Object System.Drawing.Point(200, 410)
-$activateButton.Add_Click({
-    Start-Process PowerShell -ArgumentList "-Command irm https://get.activated.win | iex" -NoNewWindow -Wait
-})
-$form.Controls.Add($activateButton)
 
 # Show Form
 $form.ShowDialog()
