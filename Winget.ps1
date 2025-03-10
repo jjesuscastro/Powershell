@@ -1,6 +1,6 @@
+Set-ExecutionPolicy Bypass -Scope Process -Force
 ﻿#This 1st portion of the script and up to #WinGet was written by Hammer of the Gods.
 #Bypass Execution Policy
-Set-ExecutionPolicy Bypass -Scope Process -Force
 
 #Elevate Script
 if (-Not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] 'Administrator')) {
