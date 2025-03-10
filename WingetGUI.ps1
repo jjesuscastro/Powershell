@@ -145,7 +145,11 @@ $button2 = Create-AdditionalButton -text "Activate Windows" -command "irm https:
 
 # Application categories and IDs
 $appsByCategory = @{ 
-    "Browsers" = @{ "Google Chrome" = "Google.Chrome" } 
+    "Browsers" = @{ 
+        "Google Chrome" = "Google.Chrome"
+        "Mozilla Firefox" = "Mozilla.Firefox"
+        "Opera GX" = "Opera.OperaGX"
+    } 
     "Utilities" = @{ 
         "7-Zip" = "7zip.7zip" 
         "PowerToys" = "Microsoft.PowerToys" 
