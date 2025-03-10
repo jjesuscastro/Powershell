@@ -1,8 +1,8 @@
 Set-ExecutionPolicy Bypass -Scope Process -Force
-﻿#This 1st portion of the script and up to #WinGet was written by Hammer of the Gods.
-#Bypass Execution Policy
+﻿# This 1st portion of the script and up to #WinGet was written by Hammer of the Gods.
+# Bypass Execution Policy
 
-#Elevate Script
+# Elevate Script
 if (-Not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] 'Administrator')) {
     if ([int](Get-CimInstance -Class Win32_OperatingSystem | Select-Object -ExpandProperty BuildNumber) -ge 6000) {
         $CommandLine = "-File `"" + $MyInvocation.MyCommand.Path + "`" " + $MyInvocation.UnboundArguments
@@ -11,14 +11,14 @@ if (-Not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdent
     }
 }
 
-#Bypass Execution Policy after elevation
+# Bypass Execution Policy after elevation
 Set-ExecutionPolicy Bypass -Scope Process -Force
 
-#WinGet
+# WinGet
 Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe
 
-#Loops while there is no internet connection.
-#Needed for PCs without ethernet, while it waits for the Wi-Fi to connect.
+# Loops while there is no internet connection.
+# Needed for PCs without ethernet, while it waits for the Wi-Fi to connect.
 Write-Host ("`n" * 10)
 Write-Host 'Testing for internet connection... Without it, script will hang in loop.'
 while (!(Test-Connection -ComputerName google.com -Quiet)) {
