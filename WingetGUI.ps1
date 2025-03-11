@@ -95,11 +95,7 @@ function Create-InstallButton {
             $total = $selectedApps.Count
             foreach ($app in $selectedApps) {
                 $index = [array]::IndexOf($selectedApps, $app) + 1
-                for ($i = 0; $i -lt 10; $i++) {  # Animation loop (adjust iterations as needed)
-                    $dots = "." * (($i % 3) + 1)  # Cycles between ., .., ...
-                    $statusLabel.Text = "Installing ($index of $total): $app$dots"
-                    Start-Sleep -Milliseconds 500
-                }
+                $statusLabel.Text = "Installing ($index of $total): $app"
                 Start-Process "winget" -ArgumentList "install --id=$app --accept-package-agreements --accept-source-agreements" -NoNewWindow -Wait
             }
             $statusLabel.Text = "Installation complete."
