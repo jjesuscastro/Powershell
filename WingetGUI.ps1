@@ -1,7 +1,48 @@
+# Application categories and IDs
+$appsByCategory = @{ 
+    "Browsers" = @{ 
+        "Google Chrome" = "Google.Chrome"
+        "Mozilla Firefox" = "Mozilla.Firefox"
+        "Opera GX" = "Opera.OperaGX"
+    } 
+    "Utilities" = @{ 
+        "7-Zip" = "7zip.7zip" 
+        "PowerToys" = "Microsoft.PowerToys" 
+        "qBittorrent" = "qBittorrent.qBittorrent"
+        "AnyBurn" = "PowerSoftware.AnyBurn"
+    } 
+    "Messaging" = @{
+        "Discord" = "Discord.Discord" 
+        "Discord PTB" = "Discord.Discord.PTB"
+    }
+    "Development" = @{ 
+        "Git" = "Git.Git" 
+        "Visual Studio Code" = "Microsoft.VisualStudioCode" 
+        "Unity Hub" = "Unity.UnityHub" 
+        "JetBrains Rider" = "JetBrains.Rider"
+        "Fork (Git Client)" = "Fork.Fork"
+    }
+    "Media" = @{ 
+        "VLC Media Player" = "VideoLAN.VLC" 
+        "Handbrake" = "Handbrake.Handbrake"
+    }
+    "Gaming" = @{ 
+        "Valorant" = "RiotGames.Valorant.AP" 
+        "Steam" = "Valve.Steam" 
+        "Epic Games Launcher" = "EpicGames.EpicGamesLauncher"
+    }
+    "Productivity" = @{ "Notion" = "Notion.Notion" }
+    "3D Printing" = @{ "PrusaSlicer" = "Prusa3D.PrusaSlicer" }
+    "Other" = @{ 
+        "TegraRcmGUI" = "eliboa.TegraRcmGUI" 
+        "VIA" = "Olivia.VIA" 
+    }
+}
+
 Add-Type -AssemblyName System.Windows.Forms
 
-# Function to create the main form
-function Create-MainForm {
+# Function to New the main form
+function New-MainForm {
     $form = New-Object System.Windows.Forms.Form
     $form.Text = "Winget Application Installer"
     $form.Size = New-Object System.Drawing.Size(400, 500)
@@ -10,8 +51,8 @@ function Create-MainForm {
     return $form
 }
 
-# Function to create the application selection TreeView
-function Create-TreeView {
+# Function to New the application selection TreeView
+function New-TreeView {
     $treeView = New-Object System.Windows.Forms.TreeView
     $treeView.Size = New-Object System.Drawing.Size(350, 300)
     $treeView.Location = New-Object System.Drawing.Point(20, 20)
@@ -19,8 +60,8 @@ function Create-TreeView {
     return $treeView
 }
 
-# Function to populate the TreeView with categorized applications
-function Populate-TreeView {
+# Function to Update the TreeView with categorized applications
+function Update-TreeView {
     param($treeView, $appsByCategory)
     foreach ($category in $appsByCategory.Keys) {
         $categoryNode = New-Object System.Windows.Forms.TreeNode($category)
@@ -34,10 +75,10 @@ function Populate-TreeView {
 }
 
 # Function to handle checking/unchecking of parent and child nodes
-function Configure-TreeViewEvents {
+function Set-TreeViewEvents {
     param($treeView)
     $treeView.add_AfterCheck({
-        param($sender, $e)
+        param($s, $e)
         if ($e.Action -ne 'ByMouse') { return }  # Prevent infinite loops
         
         $node = $e.Node
@@ -49,7 +90,7 @@ function Configure-TreeViewEvents {
         }
         
         # If all child nodes are checked, check the parent node as well
-        if ($node.Parent -ne $null) {
+        if ($null -ne $node.Parent) {
             $allChecked = $true
             foreach ($sibling in $node.Parent.Nodes) {
                 if (-not $sibling.Checked) {
@@ -62,8 +103,8 @@ function Configure-TreeViewEvents {
     })
 }
 
-# Function to create the installation status label
-function Create-StatusLabel {
+# Function to New the installation status label
+function New-StatusLabel {
     $statusLabel = New-Object System.Windows.Forms.Label
     $statusLabel.Size = New-Object System.Drawing.Size(350, 20)
     $statusLabel.Location = New-Object System.Drawing.Point(20, 330)
@@ -71,8 +112,8 @@ function Create-StatusLabel {
     return $statusLabel
 }
 
-# Function to create the install button
-function Create-InstallButton {
+# Function to New the install button
+function New-InstallButton {
     param($treeView, $statusLabel)
     $installButton = New-Object System.Windows.Forms.Button
     $installButton.Text = "Install Selected"
@@ -117,8 +158,8 @@ function Create-InstallButton {
     return $installButton
 }
 
-# Function to create additional buttons
-function Create-TitusButton {
+# Function to New additional buttons
+function New-TitusButton {
     param($text, $xPos)
     
     $button = New-Object System.Windows.Forms.Button
@@ -134,7 +175,7 @@ function Create-TitusButton {
     return $button
 }
 
-function Create-ActivateButton {
+function New-ActivateButton {
     param($text, $xPos)
     
     $button = New-Object System.Windows.Forms.Button
@@ -151,57 +192,16 @@ function Create-ActivateButton {
 }
 
 # Initialize form and UI elements
-$form = Create-MainForm
-$treeView = Create-TreeView
-$statusLabel = Create-StatusLabel
-$installButton = Create-InstallButton -treeView $treeView -statusLabel $statusLabel
-$button1 = Create-TitusButton -text "Chris Titus Script" -xPos 20
-$button2 = Create-ActivateButton -text "Activate Windows" -xPos 200
+$form = New-MainForm
+$treeView = New-TreeView
+$statusLabel = New-StatusLabel
+$installButton = New-InstallButton -treeView $treeView -statusLabel $statusLabel
+$button1 = New-TitusButton -text "Chris Titus Script" -xPos 20
+$button2 = New-ActivateButton -text "Activate Windows" -xPos 200
 
-# Application categories and IDs
-$appsByCategory = @{ 
-    "Browsers" = @{ 
-        "Google Chrome" = "Google.Chrome"
-        "Mozilla Firefox" = "Mozilla.Firefox"
-        "Opera GX" = "Opera.OperaGX"
-    } 
-    "Utilities" = @{ 
-        "7-Zip" = "7zip.7zip" 
-        "PowerToys" = "Microsoft.PowerToys" 
-        "qBittorrent" = "qBittorrent.qBittorrent"
-        "AnyBurn" = "PowerSoftware.AnyBurn"
-    } 
-    "Messaging" = @{
-        "Discord" = "Discord.Discord" 
-        "Discord PTB" = "Discord.Discord.PTB"
-    }
-    "Development" = @{ 
-        "Git" = "Git.Git" 
-        "Visual Studio Code" = "Microsoft.VisualStudioCode" 
-        "Unity Hub" = "Unity.UnityHub" 
-        "JetBrains Rider" = "JetBrains.Rider"
-        "Fork (Git Client)" = "Fork.Fork"
-    }
-    "Media" = @{ 
-        "VLC Media Player" = "VideoLAN.VLC" 
-        "Handbrake" = "Handbrake.Handbrake"
-    }
-    "Gaming" = @{ 
-        "Valorant" = "RiotGames.Valorant.AP" 
-        "Steam" = "Valve.Steam" 
-        "Epic Games Launcher" = "EpicGames.EpicGamesLauncher"
-    }
-    "Productivity" = @{ "Notion" = "Notion.Notion" }
-    "3D Printing" = @{ "PrusaSlicer" = "Prusa3D.PrusaSlicer" }
-    "Other" = @{ 
-        "TegraRcmGUI" = "eliboa.TegraRcmGUI" 
-        "VIA" = "Olivia.VIA" 
-    }
-}
-
-# Populate and configure UI elements
-Populate-TreeView -treeView $treeView -appsByCategory $appsByCategory
-Configure-TreeViewEvents -treeView $treeView
+# Update and Set UI elements
+Update-TreeView -treeView $treeView -appsByCategory $appsByCategory
+Set-TreeViewEvents -treeView $treeView
 
 # Add elements to the form
 $form.Controls.Add($treeView)
