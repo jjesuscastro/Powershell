@@ -91,15 +91,28 @@ function Create-InstallButton {
         
         if ($selectedApps.Count -eq 0) {
             [System.Windows.Forms.MessageBox]::Show("No applications selected.", "Warning", "OK", "Warning")
-        } else {
-            $total = $selectedApps.Count
-            foreach ($app in $selectedApps) {
-                $index = [array]::IndexOf($selectedApps, $app) + 1
-                $statusLabel.Text = "Installing ($index of $total): $app"
-                Start-Process "winget" -ArgumentList "install --id=$app --accept-package-agreements --accept-source-agreements" -NoNewWindow -Wait
-            }
-            $statusLabel.Text = "Installation complete."
+            return
         }
+
+        $total = $selectedApps.Count
+        foreach ($app in $selectedApps) {
+            $index = [array]::IndexOf($selectedApps, $app) + 1
+            $statusLabel.Text = "Installing ($index of $total): $app"
+
+            # Start the installation process
+            $process = Start-Process "winget" -ArgumentList "install --id=$app --accept-package-agreements --accept-source-agreements" -NoNewWindow -PassThru
+
+            # Show a rotating throbber while the process is running
+            $throbber = @("", ".", "..", "...")
+            $i = 0
+            while (!$process.HasExited) {
+                $statusLabel.Text = "Installing ($index of $total): $app " + $throbber[$i % $throbber.Length]
+                $i++
+                Start-Sleep -Milliseconds 200
+            }
+        }
+        
+        $statusLabel.Text = "Installation complete."
     })
     return $installButton
 }
