@@ -1,41 +1,41 @@
 # Application categories and IDs
 $appsByCategory = @{ 
-    "Browsers" = @{ 
-        "Google Chrome" = "Google.Chrome"
+    "Browsers"     = @{ 
+        "Google Chrome"   = "Google.Chrome"
         "Mozilla Firefox" = "Mozilla.Firefox"
-        "Opera GX" = "Opera.OperaGX"
+        "Opera GX"        = "Opera.OperaGX"
     } 
-    "Utilities" = @{ 
-        "7-Zip" = "7zip.7zip" 
-        "PowerToys" = "Microsoft.PowerToys" 
+    "Utilities"    = @{ 
+        "7-Zip"       = "7zip.7zip" 
+        "PowerToys"   = "Microsoft.PowerToys" 
         "qBittorrent" = "qBittorrent.qBittorrent"
-        "AnyBurn" = "PowerSoftware.AnyBurn"
+        "AnyBurn"     = "PowerSoftware.AnyBurn"
     } 
-    "Messaging" = @{
-        "Discord" = "Discord.Discord" 
+    "Messaging"    = @{
+        "Discord"     = "Discord.Discord" 
         "Discord PTB" = "Discord.Discord.PTB"
     }
-    "Development" = @{ 
-        "Git" = "Git.Git" 
+    "Development"  = @{ 
+        "Git"                = "Git.Git" 
         "Visual Studio Code" = "Microsoft.VisualStudioCode" 
-        "Unity Hub" = "Unity.UnityHub" 
-        "JetBrains Rider" = "JetBrains.Rider"
-        "Fork (Git Client)" = "Fork.Fork"
+        "Unity Hub"          = "Unity.UnityHub" 
+        "JetBrains Rider"    = "JetBrains.Rider"
+        "Fork (Git Client)"  = "Fork.Fork"
     }
-    "Media" = @{ 
+    "Media"        = @{ 
         "VLC Media Player" = "VideoLAN.VLC" 
-        "Handbrake" = "Handbrake.Handbrake"
+        "Handbrake"        = "Handbrake.Handbrake"
     }
-    "Gaming" = @{ 
-        "Valorant" = "RiotGames.Valorant.AP" 
-        "Steam" = "Valve.Steam" 
+    "Gaming"       = @{ 
+        "Valorant"            = "RiotGames.Valorant.AP" 
+        "Steam"               = "Valve.Steam" 
         "Epic Games Launcher" = "EpicGames.EpicGamesLauncher"
     }
     "Productivity" = @{ "Notion" = "Notion.Notion" }
-    "3D Printing" = @{ "PrusaSlicer" = "Prusa3D.PrusaSlicer" }
-    "Other" = @{ 
+    "3D Printing"  = @{ "PrusaSlicer" = "Prusa3D.PrusaSlicer" }
+    "Other"        = @{ 
         "TegraRcmGUI" = "eliboa.TegraRcmGUI" 
-        "VIA" = "Olivia.VIA" 
+        "VIA"         = "Olivia.VIA" 
     }
 }
 
@@ -60,6 +60,17 @@ function New-TreeView {
     return $treeView
 }
 
+# Function to get the list of installed applications and cache it
+function Get-InstalledApps {
+    $global:installedAppsCache = winget list 2>&1
+}
+
+# Function to check if an application is installed using the cached list
+function Is-AppInstalled {
+    param($appId)
+    return ($global:installedAppsCache -match $appId)
+}
+
 # Function to Update the TreeView with categorized applications
 function Update-TreeView {
     param($treeView, $appsByCategory)
@@ -68,6 +79,16 @@ function Update-TreeView {
         foreach ($appName in $appsByCategory[$category].Keys) {
             $appNode = New-Object System.Windows.Forms.TreeNode($appName)
             $appNode.Tag = $appsByCategory[$category][$appName]  # Store winget ID for installation
+            
+            # Check if the application is installed and disable the checkbox if it is
+            if (Is-AppInstalled -appId $appNode.Tag) {
+                $appNode.Checked = $true
+                $appNode.ForeColor = [System.Drawing.Color]::Gray
+                $appNode.NodeFont = New-Object System.Drawing.Font($treeView.Font, [System.Drawing.FontStyle]::Strikeout)
+                $appNode.Checked = $false
+                $appNode.BackColor = [System.Drawing.Color]::LightGray
+            }
+            
             $categoryNode.Nodes.Add($appNode)
         }
         $treeView.Nodes.Add($categoryNode)
@@ -78,29 +99,29 @@ function Update-TreeView {
 function Set-TreeViewEvents {
     param($treeView)
     $treeView.add_AfterCheck({
-        param($s, $e)
-        if ($e.Action -ne 'ByMouse') { return }  # Prevent infinite loops
+            param($s, $e)
+            if ($e.Action -ne 'ByMouse') { return }  # Prevent infinite loops
         
-        $node = $e.Node
-        $isChecked = $node.Checked
+            $node = $e.Node
+            $isChecked = $node.Checked
         
-        # Check/uncheck all child nodes when parent is checked/unchecked
-        foreach ($childNode in $node.Nodes) {
-            $childNode.Checked = $isChecked
-        }
-        
-        # If all child nodes are checked, check the parent node as well
-        if ($null -ne $node.Parent) {
-            $allChecked = $true
-            foreach ($sibling in $node.Parent.Nodes) {
-                if (-not $sibling.Checked) {
-                    $allChecked = $false
-                    break
-                }
+            # Check/uncheck all child nodes when parent is checked/unchecked
+            foreach ($childNode in $node.Nodes) {
+                $childNode.Checked = $isChecked
             }
-            $node.Parent.Checked = $allChecked
-        }
-    })
+        
+            # If all child nodes are checked, check the parent node as well
+            if ($null -ne $node.Parent) {
+                $allChecked = $true
+                foreach ($sibling in $node.Parent.Nodes) {
+                    if (-not $sibling.Checked) {
+                        $allChecked = $false
+                        break
+                    }
+                }
+                $node.Parent.Checked = $allChecked
+            }
+        })
 }
 
 # Function to New the installation status label
@@ -108,7 +129,7 @@ function New-StatusLabel {
     $statusLabel = New-Object System.Windows.Forms.Label
     $statusLabel.Size = New-Object System.Drawing.Size(350, 20)
     $statusLabel.Location = New-Object System.Drawing.Point(20, 330)
-    $statusLabel.Text = "Waiting for installation..."
+    $statusLabel.Text = "Select apps to Install. Greyed out apps are already installed."
     return $statusLabel
 }
 
@@ -117,44 +138,45 @@ function New-InstallButton {
     param($treeView, $statusLabel)
     $installButton = New-Object System.Windows.Forms.Button
     $installButton.Text = "Install Selected"
-    $installButton.Size = New-Object System.Drawing.Size(350, 30)
-    $installButton.Location = New-Object System.Drawing.Point(20, 360)
+    $installButton.Size = New-Object System.Drawing.Size(170, 30)
+    $installButton.Location = New-Object System.Drawing.Point(200, 360)
+    $installButton.BackColor = [System.Drawing.Color]::LightBlue  # Add a tint to the button
     
     $installButton.Add_Click({
-        $selectedApps = @()
-        foreach ($categoryNode in $treeView.Nodes) {
-            foreach ($appNode in $categoryNode.Nodes) {
-                if ($appNode.Checked) {
-                    $selectedApps += $appNode.Tag  # Collect selected app IDs
+            $selectedApps = @()
+            foreach ($categoryNode in $treeView.Nodes) {
+                foreach ($appNode in $categoryNode.Nodes) {
+                    if ($appNode.Checked) {
+                        $selectedApps += $appNode.Tag  # Collect selected app IDs
+                    }
                 }
             }
-        }
         
-        if ($selectedApps.Count -eq 0) {
-            [System.Windows.Forms.MessageBox]::Show("No applications selected.", "Warning", "OK", "Warning")
-            return
-        }
-
-        $total = $selectedApps.Count
-        foreach ($app in $selectedApps) {
-            $index = [array]::IndexOf($selectedApps, $app) + 1
-            $statusLabel.Text = "Installing ($index of $total): $app"
-
-            # Start the installation process
-            $process = Start-Process "winget" -ArgumentList "install --id=$app --accept-package-agreements --accept-source-agreements" -NoNewWindow -PassThru
-
-            # Show a rotating throbber while the process is running
-            $throbber = @("", ".", "..", "...")
-            $i = 0
-            while (!$process.HasExited) {
-                $statusLabel.Text = "Installing ($index of $total): $app " + $throbber[$i % $throbber.Length]
-                $i++
-                Start-Sleep -Milliseconds 200
+            if ($selectedApps.Count -eq 0) {
+                [System.Windows.Forms.MessageBox]::Show("No applications selected.", "Warning", "OK", "Warning")
+                return
             }
-        }
+
+            $total = $selectedApps.Count
+            foreach ($app in $selectedApps) {
+                $index = [array]::IndexOf($selectedApps, $app) + 1
+                $statusLabel.Text = "Installing ($index of $total): $app"
+
+                # Start the installation process
+                $process = Start-Process "winget" -ArgumentList "install --id=$app --accept-package-agreements --accept-source-agreements" -NoNewWindow -PassThru
+
+                # Show a rotating throbber while the process is running
+                $throbber = @("", ".", "..", "...")
+                $i = 0
+                while (!$process.HasExited) {
+                    $statusLabel.Text = "Installing ($index of $total): $app " + $throbber[$i % $throbber.Length]
+                    $i++
+                    Start-Sleep -Milliseconds 200
+                }
+            }
         
-        $statusLabel.Text = "Installation complete."
-    })
+            $statusLabel.Text = "Installation complete."
+        })
     return $installButton
 }
 
@@ -168,9 +190,9 @@ function New-TitusButton {
     $button.Location = New-Object System.Drawing.Point($xPos, 400)
 
     # Properly define the click event to use the captured variable
-    $button.Add_Click([System.EventHandler]{
-        Start-Process PowerShell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -Command `"iwr -useb https://christitus.com/win | iex`"" -NoNewWindow
-    })
+    $button.Add_Click([System.EventHandler] {
+            Start-Process PowerShell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -Command `"iwr -useb https://christitus.com/win | iex`"" -NoNewWindow
+        })
 
     return $button
 }
@@ -184,11 +206,32 @@ function New-ActivateButton {
     $button.Location = New-Object System.Drawing.Point($xPos, 400)
 
     # Properly define the click event to use the captured variable
-    $button.Add_Click([System.EventHandler]{
-        Start-Process PowerShell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -Command `"irm https://get.activated.win | iex`"" -NoNewWindow
-    })
+    $button.Add_Click([System.EventHandler] {
+            Start-Process PowerShell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -Command `"irm https://get.activated.win | iex`"" -NoNewWindow
+        })
 
     return $button
+}
+
+# Function to create the refresh button
+function New-RefreshButton {
+    param($treeView, $appsByCategory)
+    $refreshButton = New-Object System.Windows.Forms.Button
+    $refreshButton.Text = "Refresh"
+    $refreshButton.Size = New-Object System.Drawing.Size(170, 30)
+    $refreshButton.Location = New-Object System.Drawing.Point(20, 360)
+    
+    $refreshButton.Add_Click({
+            # Recheck the list of installed applications
+            Get-InstalledApps
+        
+            # Clear the existing nodes
+            $treeView.Nodes.Clear()
+        
+            # Update the TreeView with the new list
+            Update-TreeView -treeView $treeView -appsByCategory $appsByCategory
+        })
+    return $refreshButton
 }
 
 # Initialize form and UI elements
@@ -196,8 +239,12 @@ $form = New-MainForm
 $treeView = New-TreeView
 $statusLabel = New-StatusLabel
 $installButton = New-InstallButton -treeView $treeView -statusLabel $statusLabel
+$refreshButton = New-RefreshButton -treeView $treeView -appsByCategory $appsByCategory
 $button1 = New-TitusButton -text "Chris Titus Script" -xPos 20
 $button2 = New-ActivateButton -text "Activate Windows" -xPos 200
+
+# Get the list of installed applications and cache it
+Get-InstalledApps
 
 # Update and Set UI elements
 Update-TreeView -treeView $treeView -appsByCategory $appsByCategory
@@ -207,6 +254,7 @@ Set-TreeViewEvents -treeView $treeView
 $form.Controls.Add($treeView)
 $form.Controls.Add($statusLabel)
 $form.Controls.Add($installButton)
+$form.Controls.Add($refreshButton)
 $form.Controls.Add($button1)
 $form.Controls.Add($button2)
 
