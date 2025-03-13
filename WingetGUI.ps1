@@ -240,8 +240,8 @@ $treeView = New-TreeView
 $statusLabel = New-StatusLabel
 $installButton = New-InstallButton -treeView $treeView -statusLabel $statusLabel
 $refreshButton = New-RefreshButton -treeView $treeView -appsByCategory $appsByCategory
-$button1 = New-TitusButton -text "Chris Titus Script" -xPos 20
-$button2 = New-ActivateButton -text "Activate Windows" -xPos 200
+$chrisTitusButton = New-TitusButton -text "Chris Titus Script" -xPos 20
+$activateButton = New-ActivateButton -text "Activate Windows" -xPos 200
 
 # Get the list of installed applications and cache it
 Get-InstalledApps
@@ -255,8 +255,8 @@ $form.Controls.Add($treeView)
 $form.Controls.Add($statusLabel)
 $form.Controls.Add($installButton)
 $form.Controls.Add($refreshButton)
-$form.Controls.Add($button1)
-$form.Controls.Add($button2)
+$form.Controls.Add($chrisTitusButton)
+$form.Controls.Add($activateButton)
 
 # Show the Form
 $form.ShowDialog()
