@@ -1,4 +1,5 @@
 # Application categories and IDs
+Write-Host "Winget Application Installer"
 $appsByCategory = @{ 
     "Browsers"     = @{ 
         "Google Chrome"   = "Google.Chrome"
@@ -66,9 +67,9 @@ function Get-InstalledApps {
 }
 
 # Function to check if an application is installed using the cached list
-function Is-AppInstalled {
+function Test-AppInstalled {
     param($appId)
-    return ($global:installedAppsCache -match $appId)
+    return $global:installedAppsCache -contains $appId
 }
 
 # Function to Update the TreeView with categorized applications
@@ -81,7 +82,7 @@ function Update-TreeView {
             $appNode.Tag = $appsByCategory[$category][$appName]  # Store winget ID for installation
             
             # Check if the application is installed and disable the checkbox if it is
-            if (Is-AppInstalled -appId $appNode.Tag) {
+            if (Test-AppInstalled -appId $appNode.Tag) {
                 $appNode.Checked = $true
                 $appNode.ForeColor = [System.Drawing.Color]::Gray
                 $appNode.NodeFont = New-Object System.Drawing.Font($treeView.Font, [System.Drawing.FontStyle]::Strikeout)
@@ -89,9 +90,9 @@ function Update-TreeView {
                 $appNode.BackColor = [System.Drawing.Color]::LightGray
             }
             
-            $categoryNode.Nodes.Add($appNode)
+            $categoryNode.Nodes.Add($appNode) > $null
         }
-        $treeView.Nodes.Add($categoryNode)
+        $treeView.Nodes.Add($categoryNode) > $null
     }
 }
 
