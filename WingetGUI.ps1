@@ -1,45 +1,55 @@
 Write-Host "WinGet Application Installer"
 
 # Application categories and IDs
-$appsByCategory = @{ 
-    "Browsers"     = @{ 
+$appsByCategory = [ordered]@{ 
+    "Browsers"     = [ordered]@{ 
         "Google Chrome"   = "Google.Chrome"
         "Mozilla Firefox" = "Mozilla.Firefox"
         "Opera GX"        = "Opera.OperaGX"
     } 
-    "Utilities"    = @{ 
+    "Utilities"    = [ordered]@{ 
+        "AnyBurn"     = "PowerSoftware.AnyBurn"
         "7-Zip"       = "7zip.7zip" 
         "PowerToys"   = "Microsoft.PowerToys" 
         "qBittorrent" = "qBittorrent.qBittorrent"
-        "AnyBurn"     = "PowerSoftware.AnyBurn"
     } 
-    "Messaging"    = @{
+    "Messaging"    = [ordered]@{
         "Discord"     = "Discord.Discord" 
         "Discord PTB" = "Discord.Discord.PTB"
     }
-    "Development"  = @{ 
-        "Git"                = "Git.Git" 
-        "Visual Studio Code" = "Microsoft.VisualStudioCode" 
-        "Unity Hub"          = "Unity.UnityHub" 
-        "JetBrains Rider"    = "JetBrains.Rider"
+    "Development"  = [ordered]@{ 
         "Fork (Git Client)"  = "Fork.Fork"
+        "Git"                = "Git.Git" 
+        "GitHub Desktop"     = "GitHub.GitHubDesktop"
+        "JetBrains Rider"    = "JetBrains.Rider"
+        "Unity Hub"          = "Unity.UnityHub" 
+        "Visual Studio Code" = "Microsoft.VisualStudioCode"
     }
-    "Media"        = @{ 
-        "VLC Media Player" = "VideoLAN.VLC" 
+    "Media"        = [ordered]@{ 
         "Handbrake"        = "Handbrake.Handbrake"
+        "OBS Studio"       = "OBSProject.OBSStudio"
+        "Spotify"          = "Spotify.Spotify"
+        "VLC Media Player" = "VideoLAN.VLC" 
     }
-    "Gaming"       = @{ 
-        "Valorant"            = "RiotGames.Valorant.AP" 
-        "Steam"               = "Valve.Steam" 
+    "Gaming"       = [ordered]@{ 
         "Epic Games Launcher" = "EpicGames.EpicGamesLauncher"
+        "Steam"               = "Valve.Steam" 
+        "Valorant"            = "RiotGames.Valorant.AP" 
     }
-    "Productivity" = @{ "Notion" = "Notion.Notion" }
-    "3D Printing"  = @{ "PrusaSlicer" = "Prusa3D.PrusaSlicer" }
-    "Other"        = @{ 
-        "TegraRcmGUI" = "eliboa.TegraRcmGUI" 
-        "VIA"         = "Olivia.VIA" 
-        "Rainmeter"   = "Rainmeter.Rainmeter"
-        "WindHawk"    = "RamenSoftware.Windhawk"
+    "Productivity" = [ordered]@{ 
+        "Microsoft Office" = "Microsoft.MicrosoftOffice"
+        "Notion"           = "Notion.Notion" 
+    }
+    "Security"     = [ordered]@{ 
+        "Malwarebytes" = "Malwarebytes.Malwarebytes" 
+    }
+    "3D Printing"  = [ordered]@{ 
+        "PrusaSlicer" = "Prusa3D.PrusaSlicer" 
+    }
+    "Other"        = [ordered]@{ 
+        "Rainmeter" = "Rainmeter.Rainmeter"
+        "VIA"       = "Olivia.VIA" 
+        "WindHawk"  = "RamenSoftware.Windhawk"
     }
 }
 
@@ -78,6 +88,9 @@ function Is-AppInstalled {
 # Function to Update the TreeView with categorized applications
 function Update-TreeView {
     param($treeView, $appsByCategory)
+
+    $total = 0
+
     foreach ($category in $appsByCategory.Keys) {
         $categoryNode = New-Object System.Windows.Forms.TreeNode($category)
         foreach ($appName in $appsByCategory[$category].Keys) {
@@ -92,9 +105,13 @@ function Update-TreeView {
             }
             
             $categoryNode.Nodes.Add($appNode) > $null
+
+            $total++
         }
         $treeView.Nodes.Add($categoryNode) > $null
     }
+
+    Write-Host "Added $total applications."
 }
 
 # Function to handle checking/unchecking of parent and child nodes
