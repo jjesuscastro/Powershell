@@ -82,10 +82,8 @@ function Update-TreeView {
             
             # Check if the application is installed and disable the checkbox if it is
             if (Is-AppInstalled -appId $appNode.Tag) {
-                $appNode.Checked = $true
                 $appNode.ForeColor = [System.Drawing.Color]::Gray
                 $appNode.NodeFont = New-Object System.Drawing.Font($treeView.Font, [System.Drawing.FontStyle]::Strikeout)
-                $appNode.Checked = $false
                 $appNode.BackColor = [System.Drawing.Color]::LightGray
             }
             
@@ -146,7 +144,8 @@ function New-InstallButton {
             $selectedApps = @()
             foreach ($categoryNode in $treeView.Nodes) {
                 foreach ($appNode in $categoryNode.Nodes) {
-                    if ($appNode.Checked) {
+                    $isInstalled = Is-AppInstalled -appId $appNode.Tag
+                    if ($appNode.Checked -and -not $isInstalled) {
                         $selectedApps += $appNode.Tag  # Collect selected app IDs
                     }
                 }
