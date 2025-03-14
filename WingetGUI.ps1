@@ -87,9 +87,9 @@ function Update-TreeView {
                 $appNode.BackColor = [System.Drawing.Color]::LightGray
             }
             
-            $categoryNode.Nodes.Add($appNode)
+            $categoryNode.Nodes.Add($appNode) > $null
         }
-        $treeView.Nodes.Add($categoryNode)
+        $treeView.Nodes.Add($categoryNode) > $null
     }
 }
 
