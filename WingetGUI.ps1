@@ -1,3 +1,5 @@
+Write-Host "WinGet Application Installer"
+
 # Application categories and IDs
 $appsByCategory = @{ 
     "Browsers"     = @{ 
@@ -36,6 +38,8 @@ $appsByCategory = @{
     "Other"        = @{ 
         "TegraRcmGUI" = "eliboa.TegraRcmGUI" 
         "VIA"         = "Olivia.VIA" 
+        "Rainmeter"   = "Rainmeter.Rainmeter"
+        "WindHawk"    = "RamenSoftware.Windhawk"
     }
 }
 
@@ -44,7 +48,7 @@ Add-Type -AssemblyName System.Windows.Forms
 # Function to New the main form
 function New-MainForm {
     $form = New-Object System.Windows.Forms.Form
-    $form.Text = "Winget Application Installer"
+    $form.Text = "WinGet Application Installer"
     $form.Size = New-Object System.Drawing.Size(400, 500)
     $form.StartPosition = "CenterScreen"
     $form.FormBorderStyle = "FixedDialog"  # Prevent resizing
@@ -150,13 +154,15 @@ function New-InstallButton {
                     }
                 }
             }
+
+            $total = $selectedApps.Count
+            Write-Host "Selected $total apps: $selectedApps"
         
-            if ($selectedApps.Count -eq 0) {
+            if ($total -eq 0) {
                 [System.Windows.Forms.MessageBox]::Show("No applications selected.", "Warning", "OK", "Warning")
                 return
             }
-
-            $total = $selectedApps.Count
+            
             foreach ($app in $selectedApps) {
                 $index = [array]::IndexOf($selectedApps, $app) + 1
                 $statusLabel.Text = "Installing ($index of $total): $app"
@@ -172,6 +178,8 @@ function New-InstallButton {
                     $i++
                     Start-Sleep -Milliseconds 200
                 }
+
+                Write-Host "Finished installing ($index of $total): $app"
             }
         
             $statusLabel.Text = "Installation complete."
