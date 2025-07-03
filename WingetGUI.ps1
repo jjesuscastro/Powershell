@@ -1,3 +1,10 @@
+# Relaunch in STA mode if not already
+if ([Threading.Thread]::CurrentThread.ApartmentState -ne "STA") {
+    $url = "http://www.hesukastro.com/WingetGUI"
+    Start-Process powershell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -STA -Command `"iwr -useb '$url' | iex`""
+    return
+}
+
 Write-Host "WinGet Application Installer"
 
 # Application categories and IDs
