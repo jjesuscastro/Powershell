@@ -5,7 +5,7 @@ if ([Threading.Thread]::CurrentThread.ApartmentState -ne "STA") {
     return
 }
 
-Write-Host "WinGet Application Installer"
+Write-Host "WinGet Application Installer v070425"
 
 # Application categories and IDs
 $appsByCategory = [ordered]@{ 
