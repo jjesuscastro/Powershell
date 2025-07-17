@@ -265,6 +265,17 @@ function New-RefreshButton {
     return $refreshButton
 }
 
+# Function to accept winget source agreements
+function Accept-WingetSourceAgreements {
+    try {
+        Write-Host "Ensuring winget source agreements are accepted..."
+        Start-Process winget -ArgumentList "source update --accept-source-agreements" -NoNewWindow -Wait
+    } catch {
+        [System.Windows.Forms.MessageBox]::Show("Failed to update winget sources. Try manually running: winget source update", "Error", "OK", "Error")
+        exit
+    }
+}
+
 # Initialize form and UI elements
 $form = New-MainForm
 $treeView = New-TreeView
@@ -274,6 +285,8 @@ $refreshButton = New-RefreshButton -treeView $treeView -appsByCategory $appsByCa
 $chrisTitusButton = New-TitusButton -text "Chris Titus Script" -xPos 20
 $activateButton = New-ActivateButton -text "Activate Windows" -xPos 200
 
+# Accept Source Agreements
+Accept-WingetSourceAgreements
 # Get the list of installed applications and cache it
 Get-InstalledApps
 
