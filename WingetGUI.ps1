@@ -1,6 +1,6 @@
 Write-Host "WinGet Application Installer v070425"
 
-Start-Process "winget" -ArgumentList "search 7zip --accept-package-agreements --accept-source-agreements" -NoNewWindow -Wait
+Start-Process "winget" -ArgumentList "search 7zip --accept-source-agreements" -NoNewWindow -Wait
 
 # Application categories and IDs
 $appsByCategory = [ordered]@{ 
